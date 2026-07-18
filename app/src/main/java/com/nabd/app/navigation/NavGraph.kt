@@ -18,6 +18,7 @@ sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Auth : Screen("auth")
     object MainDoctor : Screen("main_doctor")
+    object EditProfile : Screen("edit_profile")
     object PatientConfig : Screen("patient_config/{patientId}") {
         fun createRoute(patientId: String) = "patient_config/$patientId"
     }
@@ -66,8 +67,22 @@ fun NabdNavGraph(navController: NavHostController) {
                     }
                 },
                 onPairSuccess = {
-                    // Stay on pairing or move to list
+                    // Navigate back to patients list tab
+                    // MainDoctorScreen uses rememberSaveable for tab state, 
+                    // so we don't need to do anything special here if we want to stay on MainDoctor
+                    // but we might want to refresh data or just show a message.
+                },
+                onEditProfile = {
+                    navController.navigate(Screen.EditProfile.route)
                 }
+            )
+        }
+
+        composable(Screen.EditProfile.route) {
+            val profileViewModel: ProfileViewModel = viewModel()
+            EditProfileScreen(
+                viewModel = profileViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 

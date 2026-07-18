@@ -1,6 +1,8 @@
 package com.nabd.app.ui.screens
 
-import androidx.compose.foundation.Image
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,8 +36,13 @@ fun ConfigurationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Local state for Patient Name editing (can be moved to ViewModel if preferred)
+    var patientName by remember { mutableStateOf("John Doe") }
+
     ConfigurationContent(
         uiState = uiState,
+        patientName = patientName,
+        onPatientNameChange = { patientName = it },
         onBack = onBack,
         onViewAnalytics = { onViewAnalytics(patientId) },
         onAddMedication = viewModel::addMedication,
@@ -44,9 +50,12 @@ fun ConfigurationScreen(
         onRemoveMedication = viewModel::removeMedication,
         onUpdateSettings = viewModel::updateDeviceSettings,
         onSync = {
+            // Trigger the sync process in the ViewModel
             viewModel.syncToDevice {
-                // Show Success Snackbar
+                // Background sync logic handles completion
             }
+            // Instantly navigate back to the Patient List Screen as requested
+            onBack()
         },
         snackbarHostState = snackbarHostState
     )
@@ -56,6 +65,8 @@ fun ConfigurationScreen(
 @Composable
 fun ConfigurationContent(
     uiState: ConfigurationUiState,
+    patientName: String,
+    onPatientNameChange: (String) -> Unit,
     onBack: () -> Unit,
     onViewAnalytics: () -> Unit,
     onAddMedication: () -> Unit,
@@ -119,7 +130,24 @@ fun ConfigurationContent(
             verticalArrangement = Arrangement.spacedBy(24.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp)
         ) {
+            // NEW SECTION: Patient Information
             item {
+                SectionHeader(title = "Patient Information", icon = Icons.Default.Person)
+            }
+            item {
+                OutlinedTextField(
+                    value = patientName,
+                    onValueChange = onPatientNameChange,
+                    label = { Text("Patient Full Name") },
+                    placeholder = { Text("e.g. John Doe") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    singleLine = true
+                )
+            }
+
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray.copy(alpha = 0.3f))
                 SectionHeader(title = "Medication Schedule", icon = Icons.Default.Medication)
             }
 
@@ -165,6 +193,18 @@ fun MedicationConfigCard(
     onUpdate: (Medication) -> Unit,
     onDelete: () -> Unit
 ) {
+    // Local state to hold the selected image URI
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Image picker launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+        // If you want to save the URI to the Medication model, you can trigger an update here
+        // onUpdate(medication.copy(imageUri = uri.toString()))
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -193,14 +233,23 @@ fun MedicationConfigCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Image Upload Placeholder
+                // Interactive Image Upload Placeholder
                 Box(
                     modifier = Modifier
                         .size(80.dp)
-                        .background(NabdBackground, RoundedCornerShape(12.dp)),
+                        .background(NabdBackground, RoundedCornerShape(12.dp))
+                        .clickable { imagePickerLauncher.launch("image/*") }, // Launches the gallery
                     contentAlignment = Alignment.Center
                 ) {
-                    IconButton(onClick = { /* Image Picker Placeholder */ }) {
+                    if (selectedImageUri != null) {
+                        // Display success icon if an image was picked
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.CheckCircle, contentDescription = "Image Selected", tint = Color(0xFF4CAF50))
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("Added", style = MaterialTheme.typography.labelSmall, color = Color(0xFF4CAF50))
+                        }
+                    } else {
+                        // Default empty state
                         Icon(Icons.Default.AddAPhoto, contentDescription = "Upload", tint = NabdSecondary)
                     }
                 }
@@ -253,7 +302,7 @@ fun AdvancedSettingsCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = NabdSecondary), // Navy Blue Card
+        colors = CardDefaults.cardColors(containerColor = NabdSecondary),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
@@ -347,6 +396,8 @@ fun ConfigurationPreview() {
                     Medication(name = "Lisinopril 10mg", time = "20:00", dosage = "1 Pill", status = MedicationStatus.PENDING)
                 )
             ),
+            patientName = "John Doe",
+            onPatientNameChange = {},
             onBack = {},
             onViewAnalytics = {},
             onAddMedication = {},

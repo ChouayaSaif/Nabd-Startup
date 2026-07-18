@@ -1,0 +1,3 @@
+- [ ] Update `PatientViewModel` with `createPatientAndPair` functionality.
+- [ ] Update `DevicePairingScreen` to handle creating a new patient when `patientId` is not provided.
+- [ ] Verify new patient appears on `PatientListScreen` after pairing.

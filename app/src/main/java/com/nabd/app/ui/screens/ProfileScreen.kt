@@ -25,17 +25,22 @@ import com.nabd.app.ui.theme.*
 import com.nabd.app.ui.viewmodel.ProfileUiState
 import com.nabd.app.ui.viewmodel.ProfileViewModel
 
+import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import androidx.compose.ui.layout.ContentScale
+
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     onLogout: () -> Unit,
-    onPatientsClick: () -> Unit
+    onPatientsClick: () -> Unit,
+    onEditClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     ProfileContent(
         uiState = uiState,
         onLogoutClick = { viewModel.logout(onLogout) },
-        onEditClick = { /* TODO */ },
+        onEditClick = onEditClick,
         onPatientsClick = onPatientsClick
     )
 }
@@ -83,7 +88,7 @@ fun ProfileContent(
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 // Header: Profile Picture & Basic Info
-                ProfileHeader(uiState.name, uiState.email)
+                ProfileHeader(uiState.name, uiState.email, uiState.profileImageUrl)
             }
 
             if (uiState.isDoctor) {
@@ -156,7 +161,7 @@ fun ProfileContent(
 }
 
 @Composable
-fun ProfileHeader(name: String, email: String) {
+fun ProfileHeader(name: String, email: String, imageUrl: String?) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
@@ -165,12 +170,21 @@ fun ProfileHeader(name: String, email: String) {
                 .background(NabdPrimary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                Icons.Default.Person,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = NabdPrimary
-            )
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = NabdPrimary
+                )
+            }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(

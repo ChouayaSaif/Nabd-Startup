@@ -21,7 +21,8 @@ import com.nabd.app.ui.viewmodel.ProfileViewModel
 fun MainDoctorScreen(
     onLogout: () -> Unit,
     onPatientClick: (String, PatientChoice) -> Unit,
-    onPairSuccess: () -> Unit
+    onPairSuccess: () -> Unit,
+    onEditProfile: () -> Unit
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(1) } // Default to Patients (Tab 1)
     val profileViewModel: ProfileViewModel = viewModel()
@@ -80,7 +81,8 @@ fun MainDoctorScreen(
                 0 -> ProfileScreen(
                     viewModel = profileViewModel,
                     onLogout = onLogout,
-                    onPatientsClick = { selectedTab = 1 }
+                    onPatientsClick = { selectedTab = 1 },
+                    onEditClick = onEditProfile
                 )
                 1 -> PatientListScreen(
                     viewModel = patientViewModel,
@@ -95,7 +97,10 @@ fun MainDoctorScreen(
                         viewModel = patientViewModel,
                         patientId = patientId,
                         onBack = { selectedTab = 1 },
-                        onPairSuccess = onPairSuccess
+                        onPairSuccess = {
+                            selectedTab = 1
+                            onPairSuccess()
+                        }
                     )
                 }
             }
