@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "98826497630",
+    "project_id": "nabd-8347b",
+    "storage_bucket": "nabd-8347b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:98826497630:android:13ad2d429c8d8eafa90ecf",
+        "android_client_info": {
+          "package_name": "com.nabd.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "98826497630-7csch6v4cr2m45u45lbe75ds9rl7kg4s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nabd.app",
+            "certificate_hash": "959af1adcebffcba06d23e16137056708cc3c561"
+          }
+        },
+        {
+          "client_id": "98826497630-jf50h370lid49rpd056n6ldk48s0c1v6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOhOrkf0POFc4_nOil6oM76kzGDjg27Gg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "98826497630-jf50h370lid49rpd056n6ldk48s0c1v6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

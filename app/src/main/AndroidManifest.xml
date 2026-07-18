@@ -5,9 +5,11 @@
 
     <application
         android:allowBackup="true"
+        android:icon="@drawable/nabd22"
         android:label="@string/app_name"
+        android:roundIcon="@drawable/nabd22"
         android:supportsRtl="true"
-        android:theme="@style/Theme.NABD"
+        android:theme="@style/Theme.NABD.Starting"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
