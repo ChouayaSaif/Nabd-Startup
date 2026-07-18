@@ -198,7 +198,7 @@ fun RoleSelection(
         verticalAlignment = Alignment.CenterVertically
     ) {
         RoleButton(
-            text = "Patient",
+            text = "Caregiver",
             isSelected = !isDoctor,
             modifier = Modifier.weight(1f),
             onClick = { onRoleChange(false) }

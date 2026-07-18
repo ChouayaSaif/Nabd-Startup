@@ -9,9 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +18,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nabd.app.data.model.Patient
+import com.nabd.app.navigation.PatientChoice
+import com.nabd.app.ui.components.PatientOptionsSheet
 import com.nabd.app.ui.theme.*
 import com.nabd.app.ui.viewmodel.PatientUiState
 import com.nabd.app.ui.viewmodel.PatientViewModel
@@ -27,18 +27,32 @@ import com.nabd.app.ui.viewmodel.PatientViewModel
 @Composable
 fun PatientListScreen(
     viewModel: PatientViewModel,
-    onPatientClick: (String) -> Unit,
+    onPatientClick: (String, PatientChoice) -> Unit,
     onAddPatient: () -> Unit,
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var selectedPatientForHub by remember { mutableStateOf<Patient?>(null) }
+
     PatientListContent(
         uiState = uiState,
         onSearchQueryChange = viewModel::onSearchQueryChange,
-        onPatientClick = onPatientClick,
+        onPatientClick = { patientId ->
+            selectedPatientForHub = uiState.patients.find { it.id == patientId }
+        },
         onAddPatient = onAddPatient,
         onBack = onBack
     )
+
+    val currentPatient = selectedPatientForHub
+    if (currentPatient != null) {
+        PatientOptionsSheet(
+            patientName = currentPatient.name,
+            onDismiss = { selectedPatientForHub = null },
+            onConfigure = { onPatientClick(currentPatient.id, PatientChoice.CONFIGURE) },
+            onViewAnalytics = { onPatientClick(currentPatient.id, PatientChoice.ANALYTICS) }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

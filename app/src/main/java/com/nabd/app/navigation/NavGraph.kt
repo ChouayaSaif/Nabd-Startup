@@ -6,19 +6,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.nabd.app.ui.screens.*
 import com.nabd.app.ui.viewmodel.*
 
+enum class PatientChoice {
+    CONFIGURE, ANALYTICS
+}
+
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Auth : Screen("auth")
-    object Profile : Screen("profile")
-    object PatientList : Screen("patient_list")
-    object DevicePairing : Screen("device_pairing/{patientId}") {
-        fun createRoute(patientId: String) = "device_pairing/$patientId"
-    }
+    object MainDoctor : Screen("main_doctor")
     object PatientConfig : Screen("patient_config/{patientId}") {
         fun createRoute(patientId: String) = "patient_config/$patientId"
     }
@@ -29,8 +28,6 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun NabdNavGraph(navController: NavHostController) {
-    val patientViewModel: PatientViewModel = viewModel()
-
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
@@ -48,55 +45,28 @@ fun NabdNavGraph(navController: NavHostController) {
             AuthScreen(
                 viewModel = authViewModel,
                 onAuthSuccess = {
-                    navController.navigate(Screen.Profile.route) {
+                    navController.navigate(Screen.MainDoctor.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(Screen.Profile.route) {
-            val profileViewModel: ProfileViewModel = viewModel()
-            ProfileScreen(
-                viewModel = profileViewModel,
+        composable(Screen.MainDoctor.route) {
+            MainDoctorScreen(
                 onLogout = {
                     navController.navigate(Screen.Auth.route) {
-                        popUpTo(Screen.Profile.route) { inclusive = true }
+                        popUpTo(Screen.MainDoctor.route) { inclusive = true }
                     }
                 },
-                onPatientsClick = {
-                    navController.navigate(Screen.PatientList.route)
-                }
-            )
-        }
-
-        composable(Screen.PatientList.route) {
-            PatientListScreen(
-                viewModel = patientViewModel,
-                onPatientClick = { patientId ->
-                    navController.navigate(Screen.PatientConfig.createRoute(patientId))
+                onPatientClick = { patientId, choice ->
+                    when (choice) {
+                        PatientChoice.CONFIGURE -> navController.navigate(Screen.PatientConfig.createRoute(patientId))
+                        PatientChoice.ANALYTICS -> navController.navigate(Screen.PatientAnalytics.createRoute(patientId))
+                    }
                 },
-                onAddPatient = {
-                    val patientId = patientViewModel.uiState.value.patients.firstOrNull { !it.isConnected }?.id ?: ""
-                    navController.navigate(Screen.DevicePairing.createRoute(patientId))
-                },
-                onBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            route = Screen.DevicePairing.route,
-            arguments = listOf(navArgument("patientId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val patientId = backStackEntry.arguments?.getString("patientId") ?: ""
-            DevicePairingScreen(
-                viewModel = patientViewModel,
-                patientId = patientId,
-                onBack = { navController.popBackStack() },
                 onPairSuccess = {
-                    navController.popBackStack()
+                    // Stay on pairing or move to list
                 }
             )
         }
